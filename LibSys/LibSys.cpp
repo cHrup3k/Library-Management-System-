@@ -6,13 +6,15 @@
 #include <algorithm>
 #include <ctime>
 
+// Class representing a book in the library
 class Book {
 public:
-    // Constructor
+    // Constructor to initialize a book with title, author, ISBN, and publication year
     Book(const std::string& title, const std::string& author, const std::string& isbn, int publicationYear)
         : title(title), author(author), isbn(isbn), publicationYear(publicationYear), isAvailable(true), dueDate(0) {}
 
-    // Getters
+    // Getters for book details
+
     std::string getTitle() const { return title; }
     std::string getAuthor() const { return author; }
     std::string getISBN() const { return isbn; }
@@ -20,11 +22,11 @@ public:
     bool getAvailability() const { return isAvailable; }
     std::time_t getDueDate() const { return dueDate; }
 
-    // Setters
+    // Setters for availability and due date
     void setAvailability(bool availability) { isAvailable = availability; }
     void setDueDate(std::time_t date) { dueDate = date; }
 
-    // Other methods
+    // Print the details of the book
     void printDetails() const {
         std::cout << "Title: " << title << "\n"
             << "Author: " << author << "\n"
@@ -33,24 +35,27 @@ public:
             << "Available: " << (isAvailable ? "Yes" : "No") << std::endl;
         if (!isAvailable) {
 #ifdef _WIN32
+            // On Windows, use ctime_s for safe conversion
             char buffer[26];
             ctime_s(buffer, sizeof(buffer), &dueDate);
             std::cout << "Due Date: " << buffer;
 #else
+            // On other systems, use ctime and localtime
             std::cout << "Due Date: " << std::asctime(std::localtime(&dueDate));
 #endif
         }
     }
 
 private:
-    std::string title;
-    std::string author;
-    std::string isbn;
-    int publicationYear;
-    bool isAvailable;
-    std::time_t dueDate; // due date for borrowed book
+    std::string title;      // Title of the book
+    std::string author;     // Author of the book
+    std::string isbn;       // ISBN of the book 
+    int publicationYear;     // Publication year of the book
+    bool isAvailable;       // Availability status of the book
+    std::time_t dueDate;    // due date for borrowed book
 };
 
+// Class representing the library
 class Library {
 public:
     // Add a new book to the library
@@ -60,12 +65,12 @@ public:
         return id;
     }
 
-    // Remove a book from the library by ID
+    // Remove a book from the library by ID, return true if successful
     bool removeBook(int id) {
         return books.erase(id) > 0;
     }
 
-    // Find a book by ID
+    // Find a book by ID, return a shared pointer to the book if found, otherwise return nullptr
     std::shared_ptr<Book> findBook(int id) const {
         auto it = books.find(id);
         if (it != books.end()) {
@@ -94,7 +99,7 @@ public:
         }
     }
 
-    // Search for books by any attribute
+    // Search for books by title, author, ISBN, ID, or publication year
     void searchBooks(const std::string& query) const {
         std::string q = query;
         std::transform(q.begin(), q.end(), q.begin(), ::tolower); // Convert query to lowercase for case-insensitive search
@@ -108,10 +113,12 @@ public:
             std::string id = std::to_string(pair.first);
             std::string year = std::to_string(book->getPublicationYear());
 
+            // Convert all strings to lowercase for case-insensitive comparison
             std::transform(title.begin(), title.end(), title.begin(), ::tolower);
             std::transform(author.begin(), author.end(), author.begin(), ::tolower);
             std::transform(isbn.begin(), isbn.end(), isbn.begin(), ::tolower);
 
+            // If query matches any book attribute, print book details
             if (title.find(q) != std::string::npos || author.find(q) != std::string::npos ||
                 isbn.find(q) != std::string::npos || id == q || year == q) {
                 std::cout << "Book ID: " << pair.first << std::endl;
@@ -126,7 +133,7 @@ public:
         }
     }
 
-    // Borrow a book by ID
+    // Borrow a book by ID for a specific borrower
     bool borrowBook(int id, const std::string& borrower) {
         auto book = findBook(id);
         if (book && book->getAvailability()) {
@@ -171,19 +178,21 @@ public:
     }
 
 private:
-    std::unordered_map<int, std::shared_ptr<Book>> books;
-    std::unordered_map<std::string, std::vector<int>> borrowedBooks; // map of borrower to list of borrowed book IDs
-    int nextId = 1;
+    std::unordered_map<int, std::shared_ptr<Book>> books;            // Map of book ID to Book object
+    std::unordered_map<std::string, std::vector<int>> borrowedBooks; // Map of borrower to list of borrowed book IDs
+    int nextId = 1;                                                  // ID generator for books
 };
 
+// Clear the console screen
 void clearConsole() {
 #ifdef _WIN32
-    system("cls");
+    system("cls");      // Command to clear screen in Windows
 #else
-    system("clear");
+    system("clear");    // Command to clear screen in Unix-based systems
 #endif
 }
-
+    
+// Print the employee menu
 void printEmployeeMenu() {
     clearConsole();
     std::cout << "\nLibrary Management System\n";
@@ -195,6 +204,7 @@ void printEmployeeMenu() {
     std::cout << "Enter your choice: ";
 }
 
+// Handle employee menu actions
 void handleEmployeeMenu(Library& library) {
     int choice;
     while (true) {
@@ -206,11 +216,11 @@ void handleEmployeeMenu(Library& library) {
             int publicationYear;
             std::cout << "Enter title: ";
             std::cin.ignore();
-            std::getline(std::cin, title);
+            std::getline(std::cin, title); // Use getline to handle spaces in input
             std::cout << "Enter author: ";
-            std::getline(std::cin, author);
+            std::getline(std::cin, author); // Use getline to handle spaces in input
             std::cout << "Enter ISBN: ";
-            std::getline(std::cin, isbn);
+            std::getline(std::cin, isbn); // Use getline to handle spaces in input
             std::cout << "Enter publication year: ";
             std::cin >> publicationYear;
 
@@ -258,10 +268,11 @@ void handleEmployeeMenu(Library& library) {
 
         std::cout << "Press Enter to continue...";
         std::cin.ignore();
-        std::cin.get();
+        std::cin.get();     // Wait for user to press enter
     }
 }
 
+// Print the borrower menu
 void printBorrowerMenu() {
     clearConsole();
     std::cout << "\nBorrower System\n";
@@ -274,6 +285,7 @@ void printBorrowerMenu() {
     std::cout << "Enter your choice: ";
 }
 
+// Handle borrower menu actions
 void handleBorrowerMenu(Library& library) {
     int choice;
     std::string borrower;
@@ -341,6 +353,7 @@ void handleBorrowerMenu(Library& library) {
     }
 }
 
+// Print the main menu
 void printMainMenu() {
     clearConsole();
     std::cout << "\nWelcome to the Library\n";
@@ -349,6 +362,8 @@ void printMainMenu() {
     std::cout << "Enter your choice: ";
 }
 
+// Preload some books into the library for testing
+// with predefined titles, authors, ISBNs, and publication years
 void preloadBooks(Library& library) {
     library.addBook("The Great Gatsby", "F. Scott Fitzgerald", "9780743273565", 1925);
     library.addBook("To Kill a Mockingbird", "Harper Lee", "9780060935467", 1960);
